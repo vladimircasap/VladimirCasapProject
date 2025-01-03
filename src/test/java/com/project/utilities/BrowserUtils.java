@@ -5,149 +5,29 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 public class BrowserUtils {
-    //Methods are static. Because we do not want to create an object to call those methods.
-    // We just want to call those methods with class name. That is why they are static type
-
 
     /**
-     * This method is used to pause the code for given seconds
-     * It is static method we can call with class name
-     * BrowserUtils.sleep(3);
-     * @param seconds
-     */
-    public static void sleep(int seconds){
-         // 1 second = 1000 millis
-        // millis = seconds*1000
-         try {
-             Thread.sleep(seconds*1000);
-         }catch(InterruptedException e){
-             e.printStackTrace();
-             System.out.println("Exception happened in sleep method!");
-         }
-     }
-
-
-     //Method info:
-    //• Name: verifyTitle()
-    //• Return type: void
-    //• Arg1: WebDriver
-    //• Arg2: String expectedTitle
-    // BrowserUtils.verifyTitle(driver,"Google")
-    public static void verifyTitle(WebDriver driver, String expectedTitle){
-
-        String actualTitle = driver.getTitle();
-
-        Assert.assertEquals(expectedTitle,actualTitle);
-
-    }
-
-    public static void waitForInvisibilityOf(WebElement element){
-        WebDriverWait wait = new WebDriverWait(Driver.getDriver(),15);
-        wait.until(ExpectedConditions.invisibilityOf(element));
-    }
-
-
-    /**
-     * This method will accept dropdown as a WebElement
-     * and return all the options' text in a List of String
-     * @return List<String>
-     */
-    public static List<String> dropdownOptionsAsString(WebElement dropdownElement){
-
-        Select select = new Select(dropdownElement);
-
-        //List of all ACTUAL month <options> as a WebElement
-        List<WebElement> actualOptionsAsWebElement = select.getOptions();
-
-        //List of all ACTUAL month options as a String
-        List<String> actualOptionsAsString = new ArrayList<>();
-
-        // with using for loop we will convert each WebElement of options to String wit using getText() method
-        // with using add() method we will add each String option in List<String> actual options as String
-        for (WebElement each : actualOptionsAsWebElement) {
-            actualOptionsAsString.add(each.getText());
-        }
-
-        return actualOptionsAsString;
-
-    }
-
-
-    /**
-     * This method will accept a group of radio buttons as a List<WebElement>
-     * it will loop through the List, and click to the radio button with provided attribute value
-     * @param radioButtons
-     * @param attributeValue
-     */
-    public static void clickRadioButton(List<WebElement> radioButtons, String attributeValue){
-
-        for (WebElement each : radioButtons ) {
-            if(each.getAttribute("value").equalsIgnoreCase(attributeValue)){
-                each.click();
-            }
-        }
-
-    }
-
-
-    /**
-     * This method will accept a String as expected value and verify actual URL CONTAINS the value.
-     * @param expectedInURL
-     */
-    public static void verifyURLContains(String expectedInURL){
-        Assert.assertTrue(Driver.getDriver().getCurrentUrl().contains(expectedInURL));
-    }
-
-
-    /*
-    This method accepts 3 arguments.
-    Arg1: webdriver
-    Arg2: expectedInUrl : for verify if the url contains given String.
-        - If condition matches, will break loop.
-    Arg3: expectedInTitle to be compared against actualTitle
-     */
-    public static void switchWindowAndVerify(String expectedInUrl, String expectedInTitle){
-
-        Set<String> allWindowsHandles = Driver.getDriver().getWindowHandles();
-
-        for (String each : allWindowsHandles) {
-
-            Driver.getDriver().switchTo().window(each);
-
-            System.out.println("Current URL: " + Driver.getDriver().getCurrentUrl());
-
-            if (Driver.getDriver().getCurrentUrl().contains(expectedInUrl)){
-                break;
-            }
-        }
-
-        //5. Assert:Title contains “expectedInTitle”
-        String actualTitle = Driver.getDriver().getTitle();
-        Assert.assertTrue(actualTitle.contains(expectedInTitle));
-    }
-
-    /**
-     * Switches to new window by the exact title. Returns to original window if target title not found
+     * Switches to new window
+     * by the exact title. Returns to original window if target title not found
      * @param targetTitle
      */
     public static void switchToWindow(String targetTitle) {
-        String origin = Driver.getDriver().getWindowHandle();
-        for (String handle : Driver.getDriver().getWindowHandles()) {
-            Driver.getDriver().switchTo().window(handle);
-            if (Driver.getDriver().getTitle().equals(targetTitle)) {
+        String origin = Driver.get().getWindowHandle();
+        for (String handle : Driver.get().getWindowHandles()) {
+            Driver.get().switchTo().window(handle);
+            if (Driver.get().getTitle().equals(targetTitle)) {
                 return;
             }
         }
-        Driver.getDriver().switchTo().window(origin);
+        Driver.get().switchTo().window(origin);
     }
 
     /**
@@ -156,7 +36,7 @@ public class BrowserUtils {
      * @param element on which to hover
      */
     public static void hover(WebElement element) {
-        Actions actions = new Actions(Driver.getDriver());
+        Actions actions = new Actions(Driver.get());
         actions.moveToElement(element).perform();
     }
 
@@ -182,7 +62,7 @@ public class BrowserUtils {
      */
     public static List<String> getElementsText(By locator) {
 
-        List<WebElement> elems = Driver.getDriver().findElements(locator);
+        List<WebElement> elems = Driver.get().findElements(locator);
         List<String> elemTexts = new ArrayList<>();
 
         for (WebElement el : elems) {
@@ -212,7 +92,7 @@ public class BrowserUtils {
      * @return
      */
     public static WebElement waitForVisibility(WebElement element, int timeToWaitInSec) {
-        WebDriverWait wait = new WebDriverWait(Driver.getDriver(), timeToWaitInSec);
+        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeToWaitInSec));
         return wait.until(ExpectedConditions.visibilityOf(element));
     }
 
@@ -224,7 +104,7 @@ public class BrowserUtils {
      * @return
      */
     public static WebElement waitForVisibility(By locator, int timeout) {
-        WebDriverWait wait = new WebDriverWait(Driver.getDriver(), timeout);
+        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
@@ -235,8 +115,8 @@ public class BrowserUtils {
      * @param timeout
      * @return
      */
-    public static WebElement waitForClickability(WebElement element, int timeout) {
-        WebDriverWait wait = new WebDriverWait(Driver.getDriver(), timeout);
+    public static WebElement waitForClickablility(WebElement element, int timeout) {
+        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.elementToBeClickable(element));
     }
 
@@ -247,8 +127,8 @@ public class BrowserUtils {
      * @param timeout
      * @return
      */
-    public static WebElement waitForClickability(By locator, int timeout) {
-        WebDriverWait wait = new WebDriverWait(Driver.getDriver(), timeout);
+    public static WebElement waitForClickablility(By locator, int timeout) {
+        WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeout));
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
@@ -264,7 +144,7 @@ public class BrowserUtils {
             }
         };
         try {
-            WebDriverWait wait = new WebDriverWait(Driver.getDriver(), timeOutInSeconds);
+            WebDriverWait wait = new WebDriverWait(Driver.get(), Duration.ofSeconds(timeOutInSeconds));
             wait.until(expectation);
         } catch (Throwable error) {
             error.printStackTrace();
@@ -279,7 +159,7 @@ public class BrowserUtils {
      */
     public static void verifyElementDisplayed(By by) {
         try {
-            Assert.assertTrue("Element not visible: " + by, Driver.getDriver().findElement(by).isDisplayed());
+            Assert.assertTrue("Element not visible: " + by, Driver.get().findElement(by).isDisplayed());
         } catch (NoSuchElementException e) {
             e.printStackTrace();
             Assert.fail("Element not found: " + by);
@@ -295,7 +175,7 @@ public class BrowserUtils {
      */
     public static void verifyElementNotDisplayed(By by) {
         try {
-            Assert.assertFalse("Element should not be visible: " + by, Driver.getDriver().findElement(by).isDisplayed());
+            Assert.assertFalse("Element should not be visible: " + by, Driver.get().findElement(by).isDisplayed());
         } catch (NoSuchElementException e) {
             e.printStackTrace();
 
@@ -357,8 +237,8 @@ public class BrowserUtils {
      * @param element
      */
     public static void clickWithJS(WebElement element) {
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].click();", element);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].scrollIntoView(true);", element);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].click();", element);
     }
 
 
@@ -368,7 +248,7 @@ public class BrowserUtils {
      * @param element
      */
     public static void scrollToElement(WebElement element) {
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].scrollIntoView(true);", element);
     }
 
     /**
@@ -377,7 +257,7 @@ public class BrowserUtils {
      * @param element
      */
     public static void doubleClick(WebElement element) {
-        new Actions(Driver.getDriver()).doubleClick(element).build().perform();
+        new Actions(Driver.get()).doubleClick(element).build().perform();
     }
 
     /**
@@ -388,7 +268,7 @@ public class BrowserUtils {
      * @param attributeValue
      */
     public static void setAttribute(WebElement element, String attributeName, String attributeValue) {
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].setAttribute(arguments[1], arguments[2]);", element, attributeName, attributeValue);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].setAttribute(arguments[1], arguments[2]);", element, attributeName, attributeValue);
     }
 
     /**
@@ -396,9 +276,9 @@ public class BrowserUtils {
      * @param element
      */
     public static void highlight(WebElement element) {
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].setAttribute('style', 'background: yellow; border: 2px solid red;');", element);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].setAttribute('style', 'background: yellow; border: 2px solid red;');", element);
         waitFor(1);
-        ((JavascriptExecutor) Driver.getDriver()).executeScript("arguments[0].removeAttribute('style', 'background: yellow; border: 2px solid red;');", element);
+        ((JavascriptExecutor) Driver.get()).executeScript("arguments[0].removeAttribute('style', 'background: yellow; border: 2px solid red;');", element);
     }
 
     /**
@@ -442,7 +322,7 @@ public class BrowserUtils {
      * @param element
      */
     public static void executeJScommand(WebElement element, String command) {
-        JavascriptExecutor jse = (JavascriptExecutor) Driver.getDriver();
+        JavascriptExecutor jse = (JavascriptExecutor) Driver.get();
         jse.executeScript(command, element);
 
     }
@@ -453,7 +333,7 @@ public class BrowserUtils {
      * @param command
      */
     public static void executeJScommand(String command) {
-        JavascriptExecutor jse = (JavascriptExecutor) Driver.getDriver();
+        JavascriptExecutor jse = (JavascriptExecutor) Driver.get();
         jse.executeScript(command);
 
     }
@@ -472,7 +352,7 @@ public class BrowserUtils {
         while (counter < attempts) {
             try {
                 //selenium must look for element again
-                clickWithJS(Driver.getDriver().findElement(by));
+                clickWithJS(Driver.get().findElement(by));
                 //if click is successful - then break
                 break;
             } catch (WebDriverException e) {
@@ -494,9 +374,9 @@ public class BrowserUtils {
      * @param time
      */
     public static void waitForPresenceOfElement(By by, long time) {
-        new WebDriverWait(Driver.getDriver(), time).until(ExpectedConditions.presenceOfElementLocated(by));
+        new WebDriverWait(Driver.get(), Duration.ofSeconds(time)).until(ExpectedConditions.presenceOfElementLocated(by));
     }
 
 
-}
 
+}
